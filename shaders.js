@@ -61,18 +61,24 @@ void main(){
  gl_FragColor=vec4(col,1.);
 }`},
 { id:"mandelbulb", title:"MANDELBULB VOYAGE",
-  desc:"Raymarched 3D fractal. Endless boss arena / loading screen / warp tunnel.",
+  desc:"Raymarched 3D fractal, power breathes 2↔12 while it folds inside-out. Endless boss arena / loading screen / warp tunnel.",
   tags:["fractal","raymarch","cave"], gameUse:"Raymarch is heavy — bake to skybox cubemap, or run at half-res + upscale. u_intensity = glow.",
   defaults:{speed:.5,intensity:1.0,hue:.55},
   frag:`
-float mb(vec3 p, out float trap){
+float mb(vec3 p, float pw, float fld, out float trap){
  vec3 z=p; float dr=1., r=0., trap2=1e9;
  for(int i=0;i<6;i++){
-  r=length(z); if(r>2.) break;
-  float th=acos(clamp(z.z/r,-1.,1.))*8.;
-  float ph=atan(z.y,z.x)*8.;
-  dr=pow(r,7.)*8.*dr+1.;
-  float rn=pow(r,8.);
+  r=length(z); if(r>2.5) break;
+  float fi=float(i);
+  float fw=fld*(.6+.4*sin(u_time*u_speed*.7+fi*.9));
+  float cw=cos(fw),sw=sin(fw);
+  z.xy=mat2(cw,-sw,sw,cw)*z.xy; // unfolding twist (rotation: DE-safe)
+  z=abs(z)-fld*.22*(.5+.5*sin(fi*1.3+u_time*u_speed*.5)); // breathing fold (mirror: DE-safe)
+  r=max(length(z),1e-3);
+  float th=acos(clamp(z.z/r,-1.,1.))*pw;
+  float ph=atan(z.y,z.x)*pw;
+  dr=pow(r,pw-1.)*pw*dr+1.;
+  float rn=pow(r,pw);
   z=rn*vec3(sin(th)*cos(ph),sin(th)*sin(ph),cos(th))+p;
   trap2=min(trap2, dot(z,z));
  }
@@ -81,7 +87,9 @@ float mb(vec3 p, out float trap){
 void main(){
  vec2 uv=auv(gl_FragCoord.xy);
  float t=u_time*u_speed;
- vec3 ro=vec3(0.,0.,2.6-.4*sin(t*.4));
+ float pw=7.+5.*sin(t*.45); // power breathes 2..12: blobby <-> spiky
+ float fld=.8+.8*sin(t*.3+1.7); // fold amount: unfolds out of itself
+ vec3 ro=vec3(0.,0.,2.4-1.2*(.5+.5*sin(t*.35))); // slow dive in/out
  float a=t*.25+(u_mouse.x-.5)*2.;
  vec3 ta=vec3(0.);
  vec3 fw=normalize(ta-ro), rt=normalize(cross(fw,vec3(0,1,0))), up=cross(rt,fw);
@@ -91,21 +99,21 @@ void main(){
  rd.xz=mat2(ca,-sa,sa,ca)*rd.xz; ro.xz=mat2(ca,-sa,sa,ca)*ro.xz;
  float d=0., trap=0.; vec3 p=ro; float m=-1.;
  for(int i=0;i<64;i++){
-  p=ro+rd*d; float tr; float e=mb(p,tr);
+  p=ro+rd*d; float tr; float e=mb(p,pw,fld,tr);
   if(e<.002){ m=1.; trap=tr; break; }
   d+=e*.9; if(d>6.) break;
  }
  vec3 col=vec3(.01,.005,.03);
  if(m>0.){
   vec2 e=vec2(.003,0.);
-  float tr; vec3 n=normalize(vec3(mb(p+e.xyy,tr)-mb(p-e.xyy,tr),mb(p+e.yxy,tr)-mb(p-e.yxy,tr),mb(p+e.yyx,tr)-mb(p-e.yyx,tr)));
+  float tr; vec3 n=normalize(vec3(mb(p+e.xyy,pw,fld,tr)-mb(p-e.xyy,pw,fld,tr),mb(p+e.yxy,pw,fld,tr)-mb(p-e.yxy,pw,fld,tr),mb(p+e.yyx,pw,fld,tr)-mb(p-e.yyx,pw,fld,tr)));
   vec3 l=normalize(vec3(-.4,.6,.9));
   float dif=clamp(dot(n,l),0.,1.);
   float ao=clamp(1.-d*.18,0.,1.);
-  vec3 base=mix(vec3(.9,.75,.3), pal(trap*2.), .65);
+  vec3 base=mix(vec3(.9,.75,.3), pal(trap*2.+t*.4), .65);
   col=base*(.38+.9*dif+.25*abs(n.y))*ao;
   col+=vec3(.4,.7,1.)*pow(1.-abs(dot(n,-rd)),3.)*.8;
-  col+=pal(trap*3.+.3)*exp(-trap*8.)*u_intensity;
+  col+=pal(trap*3.+.3+t*.25)*exp(-trap*8.)*u_intensity;
   col*=exp(-d*.15);
  } else {
   float g=fbm(rd.xy*3.+t*.1);
