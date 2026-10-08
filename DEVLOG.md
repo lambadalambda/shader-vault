@@ -10,3 +10,6 @@ Greenfield: single-file-ish static site, no build step. Vanilla WebGL1 + GLSL ES
 
 ## Log
 - 2026-10-08: scaffold + 6 shaders + gallery + fullscreen lab (sliders, copy GLSL/HLSL-ish notes). Serve with `python3 -m http.server`.
+
+## Deploy
+- 2026-10-08: pushed to github.com/lambadalambda/shader-vault, Pages (legacy, main:/) → https://lambadalambda.github.io/shader-vault/
