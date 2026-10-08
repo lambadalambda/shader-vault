@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SHADER VAULT — game-ready GLSL</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <p class="kicker">GARGANTUA // FRACTALS // GOO — live GLSL</p>
+    <h1>SHADER <span>VAULT</span></h1>
+    <p class="sub">6 live shaders for your games. Tweak, copy, ship. Zero deps, WebGL1, ports to Godot / Unity / Shadertoy.</p>
+    <div class="hero-actions">
+      <button id="pauseAll" class="btn ghost">⏸ pause all</button>
+      <a class="btn" href="#vault">browse shaders ↓</a>
+    </div>
+  </div>
+  <canvas id="heroBg"></canvas>
+</header>
+
+<main id="vault" class="grid"></main>
+
+<footer>
+  <p>built for game jams — every shader is one fragment file, uniforms: <code>u_time u_res u_speed u_intensity u_hue</code>. inspirations: Interstellar Gargantua + fractal citadels + bio-goo Refs.</p>
+</footer>
+
+<div id="lab" class="lab hidden" role="dialog" aria-modal="true">
+  <div class="lab-head">
+    <div><h2 id="labTitle"></h2><p id="labDesc"></p></div>
+    <button id="labClose" class="btn ghost">✕ close</button>
+  </div>
+  <div class="lab-body">
+    <div class="lab-view"><canvas id="labCanvas"></canvas>
+      <div class="lab-hint">drag on preview = mouse uniform · scroll = zoom seed</div>
+    </div>
+    <aside class="lab-side">
+      <div class="sliders" id="labSliders"></div>
+      <div class="row">
+        <button id="copyGLSL" class="btn">⧉ copy GLSL</button>
+        <button id="copyToy" class="btn ghost">Shadertoy wrap</button>
+      </div>
+      <pre id="labCode"></pre>
+      <p class="port" id="labPort"></p>
+    </aside>
+  </div>
+</div>
+
+<script src="shaders.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
